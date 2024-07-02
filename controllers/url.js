@@ -19,12 +19,26 @@ async function handleGetShortUrl(req,res){
     });
 };
 
-async function handleGetTimeStamp(req, res){
+async function handleGetTimeStamp(req, res) {
     const shortId = req.params.shortId;
-    const entry = await URL.findOneAndUpdate({ shortId },
-        { $push: { visitHistory: { timestamp: Date.now(),},},});
-    res.redirect(entry.redirectURL);
-};
+
+    try {
+        const entry = await URL.findOneAndUpdate(
+            { shortId },
+            { $push: { visitHistory: { timestamp: Date.now() } } },
+            { new: true } 
+        );
+
+        if (entry) {
+            res.redirect(entry.redirectURL);
+        } else {
+            res.status(404).send('URL not found');
+        }
+    } catch (error) {
+        console.error('Error updating visit history:', error);
+        res.status(500).send('Internal Server Error');
+    }
+}
 
 module.exports = {
     handleGetShortUrl,
