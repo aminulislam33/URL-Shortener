@@ -1,14 +1,12 @@
 const jwt = require('jsonwebtoken');
 const secret = "very_secret"
 
-function setUser(user){
-    if (!user || !user._id || !user.email) {
-        throw new Error('Invalid user object');
-    }
+function createTokenForUser(user){
+    if(!user) return res.redirect("/user/login");
+
     return jwt.sign({
-        _id: user._id,
         email: user.email
-    }, secret)
+    },secret)
 };
 
 function getUser(token){
@@ -17,6 +15,6 @@ function getUser(token){
 };
 
 module.exports = {
-    setUser,
+    createTokenForUser,
     getUser
 };
