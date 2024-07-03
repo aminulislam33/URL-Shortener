@@ -10,7 +10,7 @@ const urlRouter = require('./routes/url');
 const staticRouter = require('./routes/staticRouter');
 const UserSignup = require('./routes/user');
 const cookieParser = require('cookie-parser');
-const { restrictToLoggedInUserOnly, checkAuth } = require('./middlewares/auth');
+const { restrictToLoggedInUserOnly } = require('./middlewares/auth');
 
 const app = express();
 const port = process.env.PORT;
@@ -33,28 +33,9 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: false }
 }));
-app.use("/url", restrictToLoggedInUserOnly, urlRouter);
+app.use("/url", urlRouter);
 app.use("/user", UserSignup);
-app.use("/", checkAuth, staticRouter);
-
-
-
-app.get("/url/:shortId", async (req, res) => {
-  const shortId = req.params.shortId;
-  const entry = await URL.findOneAndUpdate(
-    {
-      shortId,
-    },
-    {
-      $push: {
-        visitHistory: {
-          timestamp: Date.now(),
-        },
-      },
-    }
-  );
-  res.redirect(entry.redirectURL);
-});
+app.use("/", restrictToLoggedInUserOnly, staticRouter);
 
 app.listen(port, () => {
   console.log(`Server started on ${port}`);

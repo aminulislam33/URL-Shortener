@@ -1,5 +1,4 @@
 const {User, OTP} = require('../models/user');
-const {setUser} = require('../service/auth');
 const otpGenerator = require('otp-generator');
 const nodemailer = require('nodemailer');
 
@@ -57,15 +56,23 @@ async function handleUserLogin(req, res) {
     try {
         const user = await User.findOne({ email });
 
-        if (!user || user.password !== password) {
+        console.log("Email is", email)
+
+        console.log("User in handleUserLogin function", user)
+
+        if (!user) {
             return res.status(401).render('login', { err: "Invalid email or password" });
         }
+
+        console.log("Email and PAssword is", email, password)
 
         const token = await User.matchUserProvidedPassword(email, password);
 
         if (!token) {
             return res.status(400).send("Incorrect Password");
         }
+
+        console.log("token in handleUserLogin function", token)
 
         res.cookie("uid", token);
         return res.redirect("/");

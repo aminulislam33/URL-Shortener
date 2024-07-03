@@ -35,6 +35,10 @@ userSchema.pre("save", async function(next){
 userSchema.static("matchUserProvidedPassword", async function(email, password) {
     const user = await this.findOne({ email });
 
+    console.log("Email in matchUserProvidedPassword function",email)
+
+    console.log("user in matchUserProvidedPassword function", user)
+
     if (!user) {
         throw new Error("User not found");
     }
