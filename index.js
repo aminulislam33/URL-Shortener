@@ -33,9 +33,9 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: false }
 }));
-app.use("/url", urlRouter);
+app.use("/url", restrictToLoggedInUserOnly, urlRouter);
 app.use("/user", UserSignup);
-app.use("/", restrictToLoggedInUserOnly, staticRouter);
+app.use("/", staticRouter);
 
 app.listen(port, () => {
   console.log(`Server started on ${port}`);
