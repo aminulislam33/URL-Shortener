@@ -32,24 +32,26 @@ userSchema.pre("save", async function(next){
     next(); 
 });
 
-userSchema.static("matchUserProvidedPassword", async function(email, password) {
-    const user = await this.findOne({ email });
+userSchema.static('matchUserProvidedPassword', async function (email, password) {
+    try {
+        const user = await this.findOne({ email });
 
-    console.log("Email in matchUserProvidedPassword function",email)
+        if (!user) {
+            throw new Error('Invalid email or password');
+        }
 
-    console.log("user in matchUserProvidedPassword function", user)
+        const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!user) {
-        throw new Error("User not found");
-    }
+        if (!isMatch) {
+            throw new Error('PasswordNotMatched');
+        }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (isMatch) {
         const token = createTokenForUser(user);
         return token;
-    } else {
-        throw new Error("Password not matched");
+
+    } catch (error) {
+        console.error(error);
+        throw error;
     }
 });
 

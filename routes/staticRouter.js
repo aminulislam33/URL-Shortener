@@ -9,6 +9,7 @@ router.get("/", restrictToLoggedInUserOnly, async (req, res)=>{
     const allurls = await URL.find({createdBy: req.user._id});
     res.render("home", {
         urls: allurls,
+        BASE_URL: process.env.BASE_URL
     });
 });
 

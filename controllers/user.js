@@ -1,4 +1,4 @@
-const {User, OTP} = require('../models/user');
+const { User, OTP } = require('../models/user');
 const otpGenerator = require('otp-generator');
 const nodemailer = require('nodemailer');
 
@@ -50,38 +50,6 @@ async function handleUserSignupAndOTP(req, res) {
     }
 };
 
-async function handleUserLogin(req, res) {
-    const { email, password } = req.body;
-
-    try {
-        const user = await User.findOne({ email });
-
-        console.log("Email is", email)
-
-        console.log("User in handleUserLogin function", user)
-
-        if (!user) {
-            return res.status(401).render('login', { err: "Invalid email or password" });
-        }
-
-        console.log("Email and PAssword is", email, password)
-
-        const token = await User.matchUserProvidedPassword(email, password);
-
-        if (!token) {
-            return res.status(400).send("Incorrect Password");
-        }
-
-        console.log("token in handleUserLogin function", token)
-
-        res.cookie("uid", token);
-        return res.redirect("/");
-    } catch (error) {
-        console.error('Error logging in user:', error);
-        return res.status(500).render("error", { error: "Internal Server Error" });
-    }
-};
-
 async function handleOTPVerification(req, res) {
     const { otp } = req.body;
     const email = req.session.email;
@@ -106,6 +74,30 @@ async function handleOTPVerification(req, res) {
         res.status(500).send('Error verifying OTP');
     }
 };
+
+async function handleUserLogin(req, res) {
+    const { email, password } = req.body;
+
+    console.log(`${email} is trying to login | ${new Date(Date.now()).toLocaleString()}`);
+
+    try {
+        const token = await User.matchUserProvidedPassword(email, password);
+
+        console.log(`${email} is logged in | ${new Date(Date.now()).toLocaleString()}`);
+        
+        res.cookie("uid", token);
+        return res.redirect(process.env.BASE_URL);
+    } catch (error) {
+        console.error('Error: logging in user:', error);
+        if (error.message === 'Invalid email or password') {
+            return res.status(401).render('login', { message: "Invalid email or password" });
+        } else if (error.message === 'PasswordNotMatched') {
+            return res.status(400).render('login', { message: "Incorrect Password" });
+        } else {
+            return res.status(500).render('login', { message: "Internal Server Error. Please try again later." });
+        }
+    }
+}
 
 module.exports = {
     handleUserSignupAndOTP,
