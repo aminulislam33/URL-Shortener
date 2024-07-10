@@ -15,6 +15,8 @@ async function handleGetShortUrl(req,res){
         createdBy: req.user._id
     });
     return res.render("home", {
+        BASE_URL: process.env.BASE_URL,
+        name: req.user.name,
         id: ShortId
     });
 };
