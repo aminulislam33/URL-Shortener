@@ -64,11 +64,19 @@
         a:hover {
             text-decoration: underline;
         }
-    </style> 
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
     <form action="/user/signup" method="post">
         <h1>Sign Up</h1>
+        <% if (typeof message !== 'undefined') { %>
+            <p class="error-message"><%= message %></p>
+        <% } %>
         <label>Full Name</label>
         <input type="text" required name="name">
         <label>Email</label>

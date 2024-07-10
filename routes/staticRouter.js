@@ -7,7 +7,10 @@ const router = express.Router();
 router.get("/", restrictToLoggedInUserOnly, async (req, res)=>{
     if(!req.user) return res.redirect("/user/login");
     const allurls = await URL.find({createdBy: req.user._id});
+    
     res.render("home", {
+        name: req.user.name,
+        email: req.user.email,
         urls: allurls,
         BASE_URL: process.env.BASE_URL
     });

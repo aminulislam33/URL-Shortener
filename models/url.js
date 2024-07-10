@@ -1,4 +1,3 @@
-const { Timestamp } = require('bson');
 const mongoose = require('mongoose');
 
 const urlSchema = new mongoose.Schema({
@@ -14,7 +13,7 @@ const urlSchema = new mongoose.Schema({
     visitHistory: [{ timestamp: { type: Number } }],
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "users"
+        ref: "user"
     }
 
 }, { timestamps: true });

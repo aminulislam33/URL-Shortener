@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,10 +16,12 @@
             height: 100vh;
             margin: 0;
         }
+
         h1 {
             text-align: center;
             color: #333;
         }
+
         form {
             background-color: #fff;
             padding: 30px;
@@ -28,12 +31,14 @@
             max-width: 400px;
             box-sizing: border-box;
         }
+
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
             color: #333;
         }
+
         input[type="text"],
         input[type="password"] {
             width: 100%;
@@ -44,6 +49,7 @@
             box-sizing: border-box;
             font-size: 16px;
         }
+
         button {
             width: 100%;
             padding: 12px;
@@ -56,13 +62,16 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
+
         button:hover {
             background-color: #0056b3;
         }
+
         p {
             text-align: center;
             color: #555;
         }
+
         a {
             color: #007BFF;
             text-decoration: none;
@@ -70,9 +79,11 @@
             text-align: center;
             margin-bottom: 20px;
         }
+
         a:hover {
             text-decoration: underline;
         }
+
         .message {
             text-align: center;
             margin-bottom: 20px;
@@ -81,19 +92,23 @@
         }
     </style>
 </head>
+
 <body>
-    <% if (typeof message !== 'undefined') { %>
-        <div class="message"><%= message %></div>
-    <% } %>
     <form action="/user/login" method="post">
         <h1>Login</h1>
-        <label for="email">Email</label>
-        <input type="text" id="email" name="email" required>
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required>
-        <a href="/password-reset">Forgot Password?</a>
-        <button type="submit">Login</button>
-        <p>Not Registered? <a href="/user/signup">Sign Up</a></p>
+        <% if (typeof message !=='undefined' ) { %>
+            <div class="message">
+                <%= message %>
+            </div>
+            <% } %>
+                <label for="email">Email</label>
+                <input type="text" id="email" name="email" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+                <a href="/password-reset">Forgot Password?</a>
+                <button type="submit">Login</button>
+                <p>Not Registered? <a href="/user/signup">Sign Up</a></p>
     </form>
 </body>
+
 </html>

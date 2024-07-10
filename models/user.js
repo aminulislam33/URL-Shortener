@@ -60,7 +60,7 @@ const User = mongoose.model("user", userSchema);
 const otpSchema = new mongoose.Schema({
     email: String,
     otp: String,
-    createdAt: { type: Date, expires: '5m', default: Date.now }
+    createdAt: { type: Date, expires: 300 , default: Date.now }
 });
 
 const OTP = mongoose.model('OTP', otpSchema);

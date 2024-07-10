@@ -11,32 +11,74 @@
             padding: 20px;
             background-color: #f0f2f5;
             margin: 0;
-            position: relative; /* Added to allow absolute positioning within body */
+            position: relative; 
+        }
+
+        .navbar {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+        }
+
+        .navbar-brand img {
+            height: 30px; 
+            margin-right: 10px;
+        }
+
+        .navbar-brand span {
+            font-weight: bold;
+        }
+
+        .logout-button {
+            position: relative;
+        }
+
+        .logout-button .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            right: 0;
+        }
+
+        .logout-button:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            color: #333;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f1f1f1;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
         }
 
         h1 {
             text-align: center;
             color: #333;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .home-button, .logout-button {
-            position: absolute;
-            top: 20px;
-            padding: 0 10px;
-        }
-
-        .home-button {
-            left: 20px;
-        }
-
-        .logout-button {
-            right: 20px;
         }
 
         .form-container {
@@ -100,13 +142,20 @@
 </head>
 
 <body>
-    <div class="home-button">
-        <button onclick="location.href='/'">Home</button>
-    </div>
-    <div class="logout-button">
-        <form action="/user/logout" method="get">
-            <button type="submit">Logout</button>
-        </form>
+    <div class="navbar">
+        <a class="navbar-brand" href="/">
+            
+            <span>Home</span>
+        </a>
+        <div class="logout-button">
+            <span><%= name %></span> 
+            <div class="dropdown-content">
+                <a class="dropdown-item" href="/user/profile">Profile</a>
+                <form action="/user/logout" method="get">
+                    <button type="submit" class="dropdown-item">Logout</button>
+                </form>
+            </div>
+        </div>
     </div>
     <div class="container">
         <h1>URL Shortener</h1>
