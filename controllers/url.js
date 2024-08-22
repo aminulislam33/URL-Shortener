@@ -11,8 +11,8 @@ async function handleGetShortUrl(req, res) {
             redirectURL: url,
             visitHistory: [],
         });
-        
-        return res.status(200).json({ shortId});
+
+        return res.status(200).json({ shortId });
     } catch (error) {
         console.error('Error generating short URL:', error);
         return res.status(500).json({ message: 'Server error. Please try again later.' });
@@ -21,12 +21,15 @@ async function handleGetShortUrl(req, res) {
 
 async function getAllUrls(req, res) {
     try {
-        const allUrls = await URL.find();
-        
-        res.status(200).json(allUrls);
+        const urls = await URL.find();
+        const urlsWithClickCounts = urls.map(url => ({
+            shortId: url.shortId,
+            redirectURL: url.redirectURL,
+            clicks: url.visitHistory.length
+        }));
+        res.json(urlsWithClickCounts);
     } catch (error) {
-        console.error('Error fetching URLs:', error);
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({ message: 'Error fetching URLs' });
     }
 };
 
@@ -43,7 +46,7 @@ async function handleGetTimeStamp(req, res) {
         if (entry) {
             res.redirect(entry.redirectURL);
         } else {
-            res.status(404).send('URL not found');
+            return res.status(404).json({ message: 'URL not found' });
         }
     } catch (error) {
         console.error('Error updating visit history:', error);

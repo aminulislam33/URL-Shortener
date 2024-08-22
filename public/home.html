@@ -23,7 +23,18 @@
 
         <div id="generated-urls" class="mt-5">
             <h3>Generated URLs</h3>
-            <ul id="url-list"></ul>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Short URL</th>
+                        <th>Redirect URL</th>
+                        <th>Clicks</th>
+                    </tr>
+                </thead>
+                <tbody id="url-list">
+                    <!-- Rows will be dynamically added here -->
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -33,13 +44,16 @@
                 const response = await fetch('/url/urls');
                 if (response.ok) {
                     const urls = await response.json();
-                    console.log("all urls in console:",urls);
                     const urlList = document.getElementById('url-list');
                     urls.forEach(url => {
-                        const listItem = document.createElement('li');
+                        const row = document.createElement('tr');
                         const shortUrl = `${window.location.origin}/url/${url.shortId}`;
-                        listItem.innerHTML = `<a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
-                        urlList.appendChild(listItem);
+                        row.innerHTML = `
+                            <td><a href="${shortUrl}" target="_blank">${shortUrl}</a></td>
+                            <td>${url.redirectURL}</td>
+                            <td>${url.clicks}</td>
+                        `;
+                        urlList.appendChild(row);
                     });
                 } else {
                     console.error('Error fetching URLs:', await response.json());
@@ -65,10 +79,14 @@
                 const data = await response.json();
                 if (response.ok) {
                     const urlList = document.getElementById('url-list');
-                    const listItem = document.createElement('li');
+                    const row = document.createElement('tr');
                     const shortUrl = `${window.location.origin}/url/${data.shortId}`;
-                    listItem.innerHTML = `<a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
-                    urlList.appendChild(listItem);
+                    row.innerHTML = `
+                        <td><a href="${shortUrl}" target="_blank">${shortUrl}</a></td>
+                        <td>${data.redirectURL}</td>
+                        <td>0</td> <!-- New URL starts with 0 clicks -->
+                    `;
+                    urlList.appendChild(row);
                 } else {
                     alert(data.message);
                 }
