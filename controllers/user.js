@@ -89,7 +89,8 @@ async function handleUserLogin(req, res) {
         console.log(`${email} is logged in | ${new Date(Date.now()).toLocaleString()}`);
 
         res.cookie("uid", token);
-        res.status(200).json({ message: "Login successful"});
+
+        res.status(200).json({ message: "Login successful" });
     } catch (error) {
         console.error('Error logging in user:', error);
         if (error.message === 'Invalid email or password') {
