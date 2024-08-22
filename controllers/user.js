@@ -15,10 +15,10 @@ async function handleUserSignupAndOTP(req, res) {
 
         const hashedPassword = await hashPassword(password);
         const otp = generateOTP();
-        await OTP.create({ email, otp, hashedPassword });
+        await OTP.create({ name, email, otp, hashedPassword });
 
         await sendOTPEmail(email, name, otp);
-        req.session = email;
+        req.session.email = email;
 
         res.status(200).json({ message: "OTP sent. Please verify to complete the signup." });
 
@@ -58,18 +58,28 @@ async function handleResendOTP(req, res) {
 };
 
 async function handleOTPVerification(req, res) {
-    const otp = req.body;
-    const email = req.session;
+    const { otp } = req.body;
+    const email = req.session.email;
+
+    if (!otp || !email) {
+        return res.status(400).json({ message: 'OTP and email are required.' });
+    }
 
     try {
         const otpRecord = await OTP.findOne({ email, otp });
 
         if (otpRecord) {
-            await User.create({ name: otpRecord.name, email, password: otpRecord.hashedPassword });
+            await User.create({
+                name: otpRecord.name,
+                email,
+                password: otpRecord.hashedPassword
+            });
+
             await OTP.deleteOne({ email });
+
             res.status(200).json({ message: 'OTP verified successfully. Redirecting to login page...' });
         } else {
-            res.status(400).json({ message: "Invalid OTP. Please try again." });
+            res.status(400).json({ message: 'Invalid OTP. Please try again.' });
         }
 
     } catch (error) {

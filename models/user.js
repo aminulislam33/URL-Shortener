@@ -46,6 +46,10 @@ userSchema.static('matchUserProvidedPassword', async function (email, password) 
 const User = mongoose.model("user", userSchema);
 
 const otpSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+    },
     email: {
         type: String,
         required: true,
