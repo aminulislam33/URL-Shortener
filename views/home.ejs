@@ -2,71 +2,92 @@
 <html lang="en">
 
 <head>
-    <%- include("./partials/head") %>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
 </head>
 
 <body>
-    <%- include("./partials/nav") %>
-
-        <div class="container mt-5">
-            <h1 class="text-center mb-4">URL Shortener</h1>
-            <div class="form-container">
-                <form action="/url" method="post" class="needs-validation" novalidate>
-                    <div class="mb-3">
-                        <label for="url-input" class="form-label">Enter URL here</label>
-                        <input type="url" class="form-control" id="url-input" name="url"
-                            placeholder="https://example.com" required>
-                        <div class="invalid-feedback">
-                            Please enter a valid URL.
-                        </div>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">URL Shortener</h1>
+        <div class="form-container">
+            <form action="/url" method="post" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="url-input" class="form-label">Enter URL here</label>
+                    <input type="url" class="form-control" id="url-input" name="url" placeholder="https://example.com" required>
+                    <div class="invalid-feedback">
+                        Please enter a valid URL.
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Generate</button>
-                </form>
-            </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Generate</button>
+            </form>
         </div>
+    </div>
 
-        <% if (locals.id) { %>
-            <p>URL Generated: <a href="<%= `${BASE_URL}/url/${id}` %>" target="_blank">
-                    <%= id %>
-                </a></p>
-            <% } %>
+    <!-- Display Generated URL -->
+    <div id="generated-url-section" style="display: none;">
+        <p>URL Generated: <a id="generated-url" href="" target="_blank"></a></p>
+    </div>
 
-                <% if (locals.urls && locals.urls.length> 0) { %>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">SL No</th>
-                                <th scope="col">ShortId</th>
-                                <th scope="col">Redirect URL</th>
-                                <th scope="col">Clicks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% urls.forEach((url, index)=> { %>
-                                <tr>
-                                    <td>
-                                        <%= index + 1 %>
-                                    </td>
-                                    <td>
-                                        <a href="<%= `${BASE_URL}/url/${url.shortId}` %>" target="_blank">
-                                            <%= url.shortId %>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <%= url.redirectURL %>
-                                    </td>
-                                    <td>
-                                        <%= url.visitHistory.length %>
-                                    </td>
-                                </tr>
-                                <% }) %>
-                        </tbody>
-                    </table>
-                    <% } else { %>
-                        <p>No URLs generated yet.</p>
-                        <% } %>
+    <!-- Table to show previously generated URLs -->
+    <div id="urls-table-section" style="display: none;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">SL No</th>
+                    <th scope="col">ShortId</th>
+                    <th scope="col">Redirect URL</th>
+                    <th scope="col">Clicks</th>
+                </tr>
+            </thead>
+            <tbody id="urls-table-body">
+                <!-- URL data will be inserted here dynamically -->
+            </tbody>
+        </table>
+    </div>
 
-                            <%- include("./partials/script") %>
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Example data, replace with actual data retrieval logic
+            const urls = [
+                { shortId: "abc123", redirectURL: "https://example.com", visitHistory: [] },
+                { shortId: "def456", redirectURL: "https://example2.com", visitHistory: [] }
+            ];
+
+            if (urls.length > 0) {
+                const urlsTableSection = document.getElementById('urls-table-section');
+                const urlsTableBody = document.getElementById('urls-table-body');
+                urlsTableSection.style.display = 'block';
+
+                urls.forEach((url, index) => {
+                    const row = document.createElement('tr');
+
+                    const cellIndex = document.createElement('td');
+                    cellIndex.textContent = index + 1;
+                    row.appendChild(cellIndex);
+
+                    const cellShortId = document.createElement('td');
+                    const shortIdLink = document.createElement('a');
+                    shortIdLink.href = `/url/${url.shortId}`;
+                    shortIdLink.target = "_blank";
+                    shortIdLink.textContent = url.shortId;
+                    cellShortId.appendChild(shortIdLink);
+                    row.appendChild(cellShortId);
+
+                    const cellRedirectURL = document.createElement('td');
+                    cellRedirectURL.textContent = url.redirectURL;
+                    row.appendChild(cellRedirectURL);
+
+                    const cellClicks = document.createElement('td');
+                    cellClicks.textContent = url.visitHistory.length;
+                    row.appendChild(cellClicks);
+
+                    urlsTableBody.appendChild(row);
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

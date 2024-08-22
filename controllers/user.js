@@ -1,129 +1,79 @@
 const { User, OTP } = require('../models/user');
-const otpGenerator = require('otp-generator');
-const handleSendEmail = require('../utils/sendMail');
-const jwt = require('jsonwebtoken');
+const generateOTP = require('../utils/generateOTP');
+const sendOTPEmail = require('../utils/sendOTPMail');
+const { hashPassword } = require('../utils/hashAndComparePassword');
 
 async function handleUserSignupAndOTP(req, res) {
     const { name, email, password } = req.body;
 
     try {
-
         const user = await User.findOne({ email });
 
         if (user) {
-            return res.status(400).render("signup", { message: "User email already exists" });
-        } else {
-
-            const otp = otpGenerator.generate(6, {
-                digits: true,
-                lowerCaseAlphabets: false,
-                upperCaseAlphabets: false,
-                specialChars: false
-            });
-
-            await OTP.create({ email, otp });
-
-            const subject = 'Your One-Time Password (OTP)'
-            const text = `
-    Dear ${name},
-
-Thank you for using URL Shortener. Here is your OTP for verification: ${otp}
-
-Please enter this OTP within 5 minutes to complete your verification process.
-
-If you did not request this OTP, please ignore this email.
-
-Thank you,
-Aminul Islam
-        `
-            handleSendEmail(email, subject, text)
-
-            const payload = {
-                email, name, password
-            }
-
-            const token = jwt.sign(payload, process.env.SECRET)
-
-            req.session.token = token;
-
-            return res.status(200).render("verify-otp");
+            return res.status(400).json({ message: "User email already exists" });
         }
+
+        const hashedPassword = await hashPassword(password);
+        const otp = generateOTP();
+        await OTP.create({ email, otp, hashedPassword });
+
+        await sendOTPEmail(email, name, otp);
+        req.session = email;
+
+        res.status(200).json({ message: "OTP sent. Please verify to complete the signup." });
 
     } catch (error) {
-        if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
-            return res.status(400).render("signup", { error: "Email already exists. Please use a different email." });
-        }
-
         console.error('Error creating user:', error);
+        res.status(500).send('Server error');
     }
 };
 
 async function handleResendOTP(req, res) {
-    const { email } = req.session;
+    const { email } = req.body;
+
     try {
         const existingOTP = await OTP.findOne({ email });
-
         if (!existingOTP) {
-            return res.status(404).render("verify-otp", { error: "No OTP found. Please sign up again." });
+            return res.status(404).json({ message: "OTP expired or not found. Please request a new OTP by signing up again." });
         }
 
         const otpExpirationTime = 5 * 60 * 1000;
         const currentTimestamp = Date.now();
 
         if (currentTimestamp - existingOTP.createdAt.getTime() > otpExpirationTime) {
-            const newOTP = otpGenerator.generate(6, {
-                digits: true,
-                lowerCaseAlphabets: false,
-                upperCaseAlphabets: false,
-                specialChars: false
-            });
-
+            const newOTP = generateOTP();
             existingOTP.otp = newOTP;
             existingOTP.createdAt = new Date();
             await existingOTP.save();
+            await sendOTPEmail(email, 'User', newOTP);
 
-            const subject = 'Resent OTP Verification'
-            const text = `Your new OTP for verification is: ${newOTP}`
-
-            handleSendEmail(email, subject, text);
-
-            return res.status(200).render("verify-otp", {
-                message: "New OTP has been sent. Please check your email."
-            });
+            return res.status(200).json({ message: "New OTP has been sent. Please check your email." });
+        } else {
+            return res.status(400).json({ message: "OTP is still valid. Please wait before requesting a new one." });
         }
     } catch (error) {
         console.error('Error resending OTP:', error);
+        res.status(500).send('Server error');
     }
 };
 
 async function handleOTPVerification(req, res) {
-    const { otp } = req.body;
-    const token = req.session.token;
-
-    const decoded = jwt.verify(token, process.env.SECRET);
-
-    const { email, name, password } = decoded;
+    const otp = req.body;
+    const email = req.session;
 
     try {
-        const otpRecord = await OTP.findOne({ email, otp }).exec();
+        const otpRecord = await OTP.findOne({ email, otp });
 
         if (otpRecord) {
-            res.status(200).render('otp-success', { message: 'OTP verified successfully. Redirecting to login page...' });
-
+            await User.create({ name: otpRecord.name, email, password: otpRecord.hashedPassword });
+            await OTP.deleteOne({ email });
+            res.status(200).json({ message: 'OTP verified successfully. Redirecting to login page...' });
         } else {
-            res.status(400).send("Invalid OTP. Please try again.");
+            res.status(400).json({ message: "Invalid OTP. Please try again." });
         }
 
-        await User.create({
-            name,
-            email,
-            password,
-        });
-
-        req.session.token = null;
-
     } catch (error) {
-        console.error(error);
+        console.error('Error verifying OTP:', error);
         res.status(500).send('Error verifying OTP');
     }
 };
@@ -139,15 +89,15 @@ async function handleUserLogin(req, res) {
         console.log(`${email} is logged in | ${new Date(Date.now()).toLocaleString()}`);
 
         res.cookie("uid", token);
-        return res.redirect(process.env.BASE_URL);
+        res.status(200).json({ message: "Login successful"});
     } catch (error) {
-        console.error('Error: logging in user:', error);
+        console.error('Error logging in user:', error);
         if (error.message === 'Invalid email or password') {
-            return res.status(401).render('login', { message: "Invalid email or password" });
+            res.status(401).json({ message: "Invalid email or password" });
         } else if (error.message === 'PasswordNotMatched') {
-            return res.status(400).render('login', { message: "Incorrect Password" });
+            res.status(400).json({ message: "Incorrect Password" });
         } else {
-            return res.status(500).render('login', { message: "Internal Server Error. Please try again later." });
+            res.status(500).json({ message: "Internal Server Error. Please try again later." });
         }
     }
 };

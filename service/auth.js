@@ -4,7 +4,7 @@ const secret = "very_secret"
 function createTokenForUser(user){
     if(!user) return res.redirect("/user/login");
 
-    return jwt.sign({email: user.email},secret)
+    return jwt.sign({email: user.email, name: user.name},secret)
 };
 
 function getUser(token){

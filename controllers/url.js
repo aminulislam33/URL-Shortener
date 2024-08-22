@@ -1,24 +1,33 @@
 const shortid = require("shortid");
 const URL = require("../models/url");
 
-async function handleGetShortUrl(req,res){
-    
-    const body = req.body;
-    if(!body.url){
-        return res.status(400).json({error: "URL is required"});
+async function handleGetShortUrl(req, res) {
+    const { url } = req.body;
+
+    try {
+        const shortId = shortid.generate();
+        await URL.create({
+            shortId,
+            redirectURL: url,
+            visitHistory: [],
+        });
+        
+        return res.status(200).json({ shortId});
+    } catch (error) {
+        console.error('Error generating short URL:', error);
+        return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
-    const ShortId = shortid();
-    await URL.create({
-        shortId: ShortId,
-        redirectURL: body.url,
-        visitHistory: [],
-        createdBy: req.user._id
-    });
-    return res.render("home", {
-        BASE_URL: process.env.BASE_URL,
-        name: req.user.name,
-        id: ShortId
-    });
+}
+
+async function getAllUrls(req, res) {
+    try {
+        const allUrls = await URL.find();
+        
+        res.status(200).json(allUrls);
+    } catch (error) {
+        console.error('Error fetching URLs:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
 };
 
 async function handleGetTimeStamp(req, res) {
@@ -28,7 +37,7 @@ async function handleGetTimeStamp(req, res) {
         const entry = await URL.findOneAndUpdate(
             { shortId },
             { $push: { visitHistory: { timestamp: Date.now() } } },
-            { new: true } 
+            { new: true }
         );
 
         if (entry) {
@@ -44,5 +53,6 @@ async function handleGetTimeStamp(req, res) {
 
 module.exports = {
     handleGetShortUrl,
-    handleGetTimeStamp
+    handleGetTimeStamp,
+    getAllUrls
 };

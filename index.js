@@ -5,7 +5,6 @@ const path = require('path');
 const session = require('express-session');
 const cors = require('cors');
 const urlRouter = require('./routes/url');
-const staticRouter = require('./routes/staticRouter');
 const UserRouter = require('./routes/user');
 const resetRouter = require('./routes/resetPassword');
 const cookieParser = require('cookie-parser');
@@ -26,16 +25,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors());
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   secret: 'your_secret_key',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false }
+  cookie: { secure: true }
 }));
-app.use("/url", restrictToLoggedInUserOnly, urlRouter);
+app.use("/url", urlRouter);
+app.use("/", (req, res) => { return res.sendFile(path.join(__dirname, "public", "home.html")) });
 app.use("/user", UserRouter);
 app.use("/password-reset", resetRouter);
-app.use("/", staticRouter);
 
 app.listen(port, () => {
   console.log(`Server started on ${port}`);
